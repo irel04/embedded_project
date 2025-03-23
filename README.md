@@ -23,6 +23,7 @@
    ```
 
    Use git bash for this one until lumabas ung parang ganito sa taas ibig sabihin activated na environment pede ka na mag pip install
+   
    ![image](https://github.com/user-attachments/assets/ef3385b6-38e0-4ff1-9d68-31f0a92639ab)
 4. Install requirements
 
