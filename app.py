@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time
 from tensorflow.keras.models import load_model
+from supabase_client import supabase_client
 
 # Load the pre-trained emotion detection model
 emotion_model = load_model("emotion_model.h5")
@@ -74,6 +75,11 @@ while True:
             if last_detected_emotion == emotion:
                 if time.time() - emotion_start_time >= 2:
                     captured_emotions.append(emotion)
+                    response = supabase_client.table("embedded_system").insert({
+                        "nickname": nickname,
+                        "is_success": False,
+                        "time_completed": elapsed_time
+                    }).execute()
                     print(f"{nickname}, emotion captured: {emotion}")
             else:
                 last_detected_emotion = emotion
@@ -83,6 +89,13 @@ while True:
         if set(captured_emotions) == selected_emotions:
             print(f"\n{nickname}, you completed the challenge! 🎉")
             print(f"Captured emotions: {captured_emotions}")
+
+            response = supabase_client.table("embedded_system").insert({
+                "nickname": nickname,
+                "is_success": True,
+                "time_completed": elapsed_time
+            }).execute()
+
             cap.release()
             cv2.destroyAllWindows()
             exit()
