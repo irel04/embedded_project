@@ -48,6 +48,11 @@ while True:
     elapsed_time = time.time() - start_time
     if elapsed_time >= max_duration:
         print(f"\n{nickname}, you failed to complete the challenge in time! ⏳")
+        supabase_client.table("embedded_system").insert({
+            "nickname": nickname,
+            "is_success": False,
+            "time_completed": round(elapsed_time, 2)
+        }).execute()
         break
 
     frame = cv2.flip(frame, 1)
@@ -75,11 +80,6 @@ while True:
             if last_detected_emotion == emotion:
                 if time.time() - emotion_start_time >= 2:
                     captured_emotions.append(emotion)
-                    response = supabase_client.table("embedded_system").insert({
-                        "nickname": nickname,
-                        "is_success": False,
-                        "time_completed": elapsed_time
-                    }).execute()
                     print(f"{nickname}, emotion captured: {emotion}")
             else:
                 last_detected_emotion = emotion
@@ -90,10 +90,10 @@ while True:
             print(f"\n{nickname}, you completed the challenge! 🎉")
             print(f"Captured emotions: {captured_emotions}")
 
-            response = supabase_client.table("embedded_system").insert({
+            supabase_client.table("embedded_system").insert({
                 "nickname": nickname,
                 "is_success": True,
-                "time_completed": elapsed_time
+                "time_completed": round(elapsed_time, 2)
             }).execute()
 
             cap.release()
