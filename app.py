@@ -26,18 +26,27 @@ while len(selected_emotions) < 3:
 print(f"\n{nickname}, you need to demonstrate these emotions: {', '.join(selected_emotions)}\n")
 
 # Track detected emotions with timestamps
-captured_emotions = []  # Store detected emotions instead of saving images
+captured_emotions = []
 last_detected_emotion = None
 emotion_start_time = None
 
 # Initialize face detection
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
 cap = cv2.VideoCapture(0)
+
+# Start timer
+start_time = time.time()
+max_duration = 60  # 1 minute time limit
 
 while True:
     ret, frame = cap.read()
     if not ret:
+        break
+
+    # Check if time has exceeded 1 minute
+    elapsed_time = time.time() - start_time
+    if elapsed_time >= max_duration:
+        print(f"\n{nickname}, you failed to complete the challenge in time! ⏳")
         break
 
     frame = cv2.flip(frame, 1)
@@ -57,13 +66,13 @@ while True:
 
         # Draw rectangle and label
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cv2.putText(frame, f"{emotion}: {confidence}%", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+        cv2.putText(frame, f"{emotion}: {confidence}%", (x, y - 10), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
         # Check if emotion matches selected and is held for at least 2 seconds
         if emotion in selected_emotions and emotion not in captured_emotions:
             if last_detected_emotion == emotion:
-                elapsed_time = time.time() - emotion_start_time
-                if elapsed_time >= 2:
+                if time.time() - emotion_start_time >= 2:
                     captured_emotions.append(emotion)
                     print(f"{nickname}, emotion captured: {emotion}")
             else:
@@ -81,7 +90,7 @@ while True:
     # Display progress on screen
     y_offset = 30
     for emotion in selected_emotions:
-        color = (0, 255, 0) if emotion in captured_emotions else (0, 0, 255)  # Green if captured, Red if not
+        color = (0, 255, 0) if emotion in captured_emotions else (0, 0, 255)
         cv2.putText(frame, f"{emotion}: {'✔' if emotion in captured_emotions else '❌'}",
                     (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
         y_offset += 40
