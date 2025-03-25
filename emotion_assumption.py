@@ -3,7 +3,6 @@ import numpy as np
 import time
 from tensorflow.keras.models import load_model
 import random
-import webbrowser
 
 
 
@@ -137,7 +136,7 @@ def emotional_tendency():
         print("\n📢 **Future Emotion Prediction (4 hours later):**")
         print(future_prediction)
 
-        webbrowser.open_new("https://jci-n-web.vercel.app/embedded-system")
+        # webbrowser.open_new("https://jci-n-web.vercel.app/embedded-system")
 
         return future_prediction
 
