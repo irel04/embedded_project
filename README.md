@@ -20,6 +20,7 @@
 
    ```bash
    python -m venv venv
+   source venv/Scripts/activate
    ```
 
    Use git bash for this one until lumabas ung parang ganito sa taas ibig sabihin activated na environment pede ka na mag pip install
