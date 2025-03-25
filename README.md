@@ -5,6 +5,7 @@
 2. After the camera opens the user will try to imitate the selected emotions in 1-minute
 3. Then, once the challenge is completed, camera will now detect and try to predict the hidden emotion on neutral face. After 1-minute it will send the result on the website and the prize box will now open
 4. The challenger can now view the result and prediction
+   
    ![image](https://github.com/user-attachments/assets/4dc9859f-b120-4826-80b5-ff7aa6078d75)
 
    
