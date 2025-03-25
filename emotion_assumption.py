@@ -4,16 +4,21 @@ import time
 from tensorflow.keras.models import load_model
 import random
 import webbrowser
+import mediapipe as mp
 
+# Load the pre-trained emotion detection model
+emotion_model = load_model("emotion_model.h5")
 
+# Emotion labels
+emotion_labels = ['Angry', 'Disgust', 'Fear',
+                'Happy', 'Neutral', 'Sad', 'Surprise']
+
+# Initialize Mediapipe Face Mesh for facial landmarks
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, min_detection_confidence=0.5)
 
 def emotional_tendency():
-	# Load the pre-trained emotion detection model
-    emotion_model = load_model("emotion_model.h5")
-
-    # Emotion labels
-    emotion_labels = ['Angry', 'Disgust', 'Fear',
-                    'Happy', 'Neutral', 'Sad', 'Surprise']
+	
 
     # Initialize face detection
     face_cascade = cv2.CascadeClassifier(
@@ -40,25 +45,36 @@ def emotional_tendency():
             break
 
         frame = cv2.flip(frame, 1)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(
-            gray, scaleFactor=1.3, minNeighbors=5)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = face_mesh.process(rgb_frame)
 
-        for (x, y, w, h) in sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[:1]:
-            roi_gray = gray[y:y+h, x:x+w]
-            roi_gray = cv2.resize(roi_gray, (48, 48))
-            roi_gray = np.expand_dims(roi_gray, axis=0)
-            roi_gray = np.expand_dims(roi_gray, axis=-1) / 255.0
+        if results.multi_face_landmarks:
+            for face_landmarks in results.multi_face_landmarks:
+                # Extract face bounding box coordinates
+                h, w, _ = frame.shape
+                x_min = int(min([lm.x * w for lm in face_landmarks.landmark]))
+                y_min = int(min([lm.y * h for lm in face_landmarks.landmark]))
+                x_max = int(max([lm.x * w for lm in face_landmarks.landmark]))
+                y_max = int(max([lm.y * h for lm in face_landmarks.landmark]))
 
-            predictions = emotion_model.predict(roi_gray)[0]
-            max_index = np.argmax(predictions)
-            emotion = emotion_labels[max_index]
-            confidence = round(predictions[max_index] * 100, 2)
+                # Extract face ROI
+                roi_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)[y_min:y_max, x_min:x_max]
+                roi_gray = cv2.resize(roi_gray, (48, 48))
+                roi_gray = np.expand_dims(roi_gray, axis=0)
+                roi_gray = np.expand_dims(roi_gray, axis=-1) / 255.0
 
-            # Draw rectangle and label
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            cv2.putText(frame, f"{emotion}: {confidence}%", (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+                predictions = emotion_model.predict(roi_gray)[0]
+                max_index = np.argmax(predictions)
+                emotion = emotion_labels[max_index]
+                confidence = round(predictions[max_index] * 100, 2)
+
+                # Draw facial landmarks
+                for landmark in face_landmarks.landmark:
+                    x, y = int(landmark.x * w), int(landmark.y * h)
+                    cv2.circle(frame, (x, y), 1, (0, 255, 0), -1)
+
+                cv2.putText(frame, f"{emotion}: {confidence}%", (x_min, y_min - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
             # Neutral Face Prediction Logic
             if emotion == "Neutral":
@@ -146,3 +162,5 @@ def emotional_tendency():
 
         return None
 
+if __name__ == "__main__":
+    emotional_tendency()

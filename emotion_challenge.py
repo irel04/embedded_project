@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
 import time
+import mediapipe as mp
 from tensorflow.keras.models import load_model
-from supabase_client import supabase_client
-
 
 # Load the pre-trained emotion detection model
 emotion_model = load_model("emotion_model.h5")
@@ -11,18 +10,17 @@ emotion_model = load_model("emotion_model.h5")
 # Emotion labels
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
-def emotion_detection (nickname, selected_emotions):
-	
-    # Track detected emotions with timestamps
+# Initialize Mediapipe Face Mesh for facial landmarks
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, min_detection_confidence=0.5)
+
+def emotion_detection(nickname, selected_emotions):
     captured_emotions = []
     last_detected_emotion = None
     emotion_start_time = None
 
-    # Initialize face detection
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     cap = cv2.VideoCapture(0)
 
-    # Start timer
     start_time = time.time()
     max_duration = 60  # 1 minute time limit
 
@@ -31,57 +29,62 @@ def emotion_detection (nickname, selected_emotions):
         if not ret:
             break
 
-        # Check if time has exceeded 1 minute
         elapsed_time = time.time() - start_time
         if elapsed_time >= max_duration:
             print(f"\n{nickname}, you failed to complete the challenge in time! ⏳")
-
             return [False, round(elapsed_time, 2)]
 
-
         frame = cv2.flip(frame, 1)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = face_mesh.process(rgb_frame)
 
-        for (x, y, w, h) in sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[:1]:
-            roi_gray = gray[y:y+h, x:x+w]
-            roi_gray = cv2.resize(roi_gray, (48, 48))
-            roi_gray = np.expand_dims(roi_gray, axis=0)
-            roi_gray = np.expand_dims(roi_gray, axis=-1) / 255.0
+        if results.multi_face_landmarks:
+            for face_landmarks in results.multi_face_landmarks:
+                # Extract face bounding box coordinates
+                h, w, _ = frame.shape
+                x_min = int(min([lm.x * w for lm in face_landmarks.landmark]))
+                y_min = int(min([lm.y * h for lm in face_landmarks.landmark]))
+                x_max = int(max([lm.x * w for lm in face_landmarks.landmark]))
+                y_max = int(max([lm.y * h for lm in face_landmarks.landmark]))
 
-            predictions = emotion_model.predict(roi_gray)[0]
-            max_index = np.argmax(predictions)
-            emotion = emotion_labels[max_index]
-            confidence = round(predictions[max_index] * 100, 2)
+                # Extract face ROI
+                roi_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)[y_min:y_max, x_min:x_max]
+                roi_gray = cv2.resize(roi_gray, (48, 48))
+                roi_gray = np.expand_dims(roi_gray, axis=0)
+                roi_gray = np.expand_dims(roi_gray, axis=-1) / 255.0
 
-            # Draw rectangle and label
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            cv2.putText(frame, f"{emotion}: {confidence}%", (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+                predictions = emotion_model.predict(roi_gray)[0]
+                max_index = np.argmax(predictions)
+                emotion = emotion_labels[max_index]
+                confidence = round(predictions[max_index] * 100, 2)
 
-            # Check if emotion matches selected and is held for at least 5 seconds
-            if emotion in selected_emotions and emotion not in captured_emotions:
-                if last_detected_emotion == emotion:
-                    if time.time() - emotion_start_time >= 5:
-                        captured_emotions.append(emotion)
-                        print(f"{nickname}, emotion captured: {emotion}")
-                else:
-                    last_detected_emotion = emotion
-                    emotion_start_time = time.time()
+                # Draw facial landmarks
+                for landmark in face_landmarks.landmark:
+                    x, y = int(landmark.x * w), int(landmark.y * h)
+                    cv2.circle(frame, (x, y), 1, (0, 255, 0), -1)
 
-            # Check if all selected emotions have been demonstrated
-            if set(captured_emotions) == selected_emotions:
-                print(f"\n{nickname}, you completed the challenge! 🎉")
-                print(f"Captured emotions: {captured_emotions}")
+                cv2.putText(frame, f"{emotion}: {confidence}%", (x_min, y_min - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-               
+                # Emotion capture logic
+                if emotion in selected_emotions and emotion not in captured_emotions:
+                    if last_detected_emotion == emotion:
+                        if time.time() - emotion_start_time >= 5:
+                            captured_emotions.append(emotion)
+                            print(f"{nickname}, emotion captured: {emotion}")
+                    else:
+                        last_detected_emotion = emotion
+                        emotion_start_time = time.time()
 
-                cap.release()
-                cv2.destroyAllWindows()
+                if set(captured_emotions) == set(selected_emotions):
+                    print(f"\n{nickname}, you completed the challenge! 🎉")
+                    print(f"Captured emotions: {captured_emotions}")
 
-                return [True, round(elapsed_time, 2)]
+                    cap.release()
+                    cv2.destroyAllWindows()
+                    return [True, round(elapsed_time, 2)]
 
-        # Display progress on screen
+        # Display progress
         y_offset = 30
         for emotion in selected_emotions:
             color = (0, 255, 0) if emotion in captured_emotions else (0, 0, 255)
@@ -96,7 +99,6 @@ def emotion_detection (nickname, selected_emotions):
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     emotion_detection(nickname="irel", selected_emotions=["Angry", "Sad", "Happy"])
