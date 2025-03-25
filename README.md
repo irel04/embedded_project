@@ -4,7 +4,7 @@
 1. A user starts to randomly pick-out three different emotions then the person in-charge will input it on the screen along with its nickname
 2. After the camera opens the user will try to imitate the selected emotions in 1-minute
 3. Then, once the challenge is completed, camera will now detect and try to predict the hidden emotion on neutral face. After 1-minute it will send the result on the website and the prize box will now open
-4. The challenger can now view the result and prediction
+4. The challenger can now view the result and assessment
    
    ![image](https://github.com/user-attachments/assets/4dc9859f-b120-4826-80b5-ff7aa6078d75)
 
@@ -18,21 +18,21 @@
 - **Tracking Trends in Neutral Detection** 🗿:  
   The script analyzes the second-highest probability emotion when a face is detected as Neutral. This helps determine if the user was slightly Happy, Sad, or Angry while appearing Neutral. A counter tracks how often these emotions occur during neutral moments.  
 
-- **Making Predictions** 📈:  
+- **Making Assessment** 📈:  
   After one minute of detection, the script analyzes emotional trends. If no clear trend is detected, it assumes the user remains Neutral. Otherwise, it calculates probabilities for **Happy, Sad, or Angry** based on observed frequencies. A weighted random selection is then used to pick a pre-defined, randomized message.  
 
-### 2. How reliable is this prediction? 🤨  
+### 2. How reliable is this assessment? 🤨  
 - This prediction method is **not scientifically validated** since we lack sufficient training data on emotional trends. It is meant to be a **fun, heuristic-based approximation** rather than an accurate psychological assessment.  
 
 - **What is heuristic-based approximation?** 🤔  
   It refers to making predictions using patterns, past observations, and simplified rules instead of precise calculations or deep scientific models.  
 
-### 3. How does heuristic-based approximation apply to our emotion prediction? ⛓️‍💥  
+### 3. How does heuristic-based approximation apply to our emotion assessment? ⛓️‍💥  
 Our emotion detection script follows a **heuristic approach** because:  
-- It assumes emotional trends continue—if you appeared slightly Happy most of the time while Neutral, it predicts you may feel Happy later.  
-- It applies a simple rule: **the most frequently observed secondary emotion = predicted future emotion**.  
+- It assumes emotional trends continue—if you appeared slightly Happy most of the time while Neutral, it assess you may feel Happy later.  
+- It applies a simple rule: **the most frequently observed secondary emotion = might be future emotion**.  
 - It does not analyze deep psychological factors—only facial expressions observed within a short session.  
-- It incorporates randomness to keep predictions varied, acknowledging that emotions are complex and influenced by multiple factors.  
+- It incorporates randomness to keep assessment varied, acknowledging that emotions are complex and influenced by multiple factors.  
 
 ---
 
