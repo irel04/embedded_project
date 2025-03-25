@@ -43,7 +43,7 @@ def emotion_detection (nickname, selected_emotions):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
 
-        for (x, y, w, h) in faces:
+        for (x, y, w, h) in sorted(faces, key=lambda f: f[2] * f[3], reverse=True)[:1]:
             roi_gray = gray[y:y+h, x:x+w]
             roi_gray = cv2.resize(roi_gray, (48, 48))
             roi_gray = np.expand_dims(roi_gray, axis=0)
@@ -56,13 +56,13 @@ def emotion_detection (nickname, selected_emotions):
 
             # Draw rectangle and label
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-            cv2.putText(frame, f"{emotion}: {confidence}%", (x, y - 10), 
+            cv2.putText(frame, f"{emotion}: {confidence}%", (x, y - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-            # Check if emotion matches selected and is held for at least 2 seconds
+            # Check if emotion matches selected and is held for at least 5 seconds
             if emotion in selected_emotions and emotion not in captured_emotions:
                 if last_detected_emotion == emotion:
-                    if time.time() - emotion_start_time >= 2:
+                    if time.time() - emotion_start_time >= 5:
                         captured_emotions.append(emotion)
                         print(f"{nickname}, emotion captured: {emotion}")
                 else:
@@ -85,7 +85,7 @@ def emotion_detection (nickname, selected_emotions):
         y_offset = 30
         for emotion in selected_emotions:
             color = (0, 255, 0) if emotion in captured_emotions else (0, 0, 255)
-            cv2.putText(frame, f"{emotion}: {'✔' if emotion in captured_emotions else '❌'}",
+            cv2.putText(frame, f"{'[/]' if emotion in captured_emotions else '[ ]'} {emotion}",
                         (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
             y_offset += 40
 
@@ -98,3 +98,5 @@ def emotion_detection (nickname, selected_emotions):
     cv2.destroyAllWindows()
 
 
+if __name__ == "__main__":
+    emotion_detection(nickname="irel", selected_emotions=["Angry", "Sad", "Happy"])
