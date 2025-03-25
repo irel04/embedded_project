@@ -111,21 +111,22 @@ def emotional_tendency():
             # Provide multiple potential outcomes
             prediction_options = {
                 "Happy": [
-                    "You may feel more positive and cheerful in the next 4 hours! 😃",
-                    "You might find yourself smiling for no reason later. 😊",
-                    "A good mood boost is on the way! 🎉"
+                    "You may feel more positive and cheerful in the next few hours! Keep spreading your joy and uplifting those around you. 😃",
+                    "A sudden burst of happiness might make you smile for no reason. Enjoy the good vibes and share them with others! 😊",
+                    "Your day is about to get brighter! Expect uplifting moments, whether from good news, a fun conversation, or a simple act of kindness. 🎉"
                 ],
                 "Sad": [
-                    "You might feel a bit down later. Try to do something uplifting! 😔",
-                    "You could experience moments of low energy. Stay engaged! 🌱",
-                    "A wave of nostalgia might hit you. Keep some good music ready! 🎶"
+                    "You might experience a wave of sadness or nostalgia soon. Try engaging in a favorite hobby or reaching out to a friend for support. 😔",
+                    "A sense of low energy could affect your mood. Stay active, listen to uplifting music, or take a short walk to refresh yourself. 🌱",
+                    "Memories from the past may resurface, making you feel emotional. Keep a comforting playlist or a happy distraction ready to lift your spirits. 🎶"
                 ],
                 "Angry": [
-                    "You may experience some stress or frustration. Take deep breaths! 😠",
-                    "Watch out for minor irritations that might pile up. Stay mindful! 🧘",
-                    "A challenging situation might test your patience. Stay calm! 🚦"
+                    "Frustration may arise due to unexpected challenges. Remember to take deep breaths, stay patient, and approach situations with a calm mind. 😠",
+                    "You could feel irritated by small inconveniences. Try mindfulness techniques or a short break to avoid unnecessary stress. 🧘",
+                    "A difficult conversation or situation might test your patience. Stay composed, think before you react, and handle things wisely to maintain peace. 🚦"
                 ]
             }
+
 
             # Select a random prediction from the chosen emotion category
             future_prediction = random.choice(prediction_options.get(

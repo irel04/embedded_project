@@ -1,10 +1,10 @@
+import time
 from neutral import emotional_tendency
 from emotion_challenge import emotion_detection
 from supabase_client import supabase_client
 
 # Emotion labels
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
-
 
 # Ask for user's nickname
 nickname = input("Enter your nickname: ")
@@ -22,6 +22,14 @@ while len(selected_emotions) < 3:
 
 print(f"\n{nickname}, you need to demonstrate these emotions: {', '.join(selected_emotions)}\n")
 
+# Countdown before starting the challenge
+print("Get ready! Starting in...")
+for i in range(3, 0, -1):
+    print(i)
+    time.sleep(1)
+
+print("\nChallenge started! 🎥")
+
 # Run emotion detection
 [is_successful, elapsed_time] = emotion_detection(nickname=nickname, selected_emotions=selected_emotions)
 
@@ -30,10 +38,9 @@ tendency = emotional_tendency()
 
 print(f'Hi {nickname}, here is your challenge result: completed: {is_successful}, elapsed_time: {elapsed_time}, prediction: {tendency}')
 
-
-
+# Insert result into Supabase
 supabase_client.table("embedded_system").insert({
-    "nickname" : nickname,
+    "nickname": nickname,
     "is_success": is_successful,
     "time_completed": elapsed_time,
     "prediction": tendency
